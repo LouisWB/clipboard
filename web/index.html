@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>剪贴板共享</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #content-display {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+        }
+        .status {
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>剪贴板共享</h1>
+        <div class="input-group">
+            <input type="text" id="session-id" placeholder="输入会话ID">
+            <button id="join-btn">加入会话</button>
+        </div>
+        <div id="content-display">
+            <p>等待剪贴板内容...</p>
+        </div>
+        <p class="status" id="connection-status">未连接</p>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        const socket = io('http://localhost:3000');
+        const sessionInput = document.getElementById('session-id');
+        const joinBtn = document.getElementById('join-btn');
+        const contentDisplay = document.getElementById('content-display');
+        const connectionStatus = document.getElementById('connection-status');
+        let currentSession = null;
+
+        // 连接状态处理
+        socket.on('connect', () => {
+            connectionStatus.textContent = '已连接';
+            connectionStatus.style.color = '#28a745';
+        });
+
+        socket.on('disconnect', () => {
+            connectionStatus.textContent = '未连接';
+            connectionStatus.style.color = '#dc3545';
+        });
+
+        // 加入会话
+        joinBtn.addEventListener('click', () => {
+            const sessionId = sessionInput.value.trim();
+            if (sessionId) {
+                currentSession = sessionId;
+                socket.emit('join-session', sessionId);
+                alert('已加入会话: ' + sessionId);
+            }
+        });
+
+        // 监听剪贴板更新
+        socket.on('clipboard-updated', (data) => {
+            if (data.type === 'text') {
+                contentDisplay.textContent = data.content;
+            } else if (data.type === 'image') {
+                contentDisplay.innerHTML = `<img src="${data.content}" style="max-width: 100%;">`;
+            }
+        });
+
+        // 监听复制事件
+        document.addEventListener('copy', (e) => {
+            if (!currentSession) return;
+            
+            const selection = document.getSelection();
+            const text = selection.toString();
+            if (text) {
+                socket.emit('clipboard-update', {
+                    sessionId: currentSession,
+                    content: text,
+                    type: 'text'
+                });
+            }
+        });
+
+        // 监听粘贴事件
+        document.addEventListener('paste', (e) => {
+            if (!currentSession) return;
+            
+            const items = e.clipboardData.items;
+            for (let item of items) {
+                if (item.type.indexOf('image') !== -1) {
+                    const blob = item.getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        socket.emit('clipboard-update', {
+                            sessionId: currentSession,
+                            content: e.target.result,
+                            type: 'image'
+                        });
+                    };
+                    reader.readAsDataURL(blob);
+                } else if (item.type === 'text/plain') {
+                    item.getAsString(text => {
+                        socket.emit('clipboard-update', {
+                            sessionId: currentSession,
+                            content: text,
+                            type: 'text'
+                        });
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>

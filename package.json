@@ -1,0 +1,26 @@
+{
+  "name": "clipboard-share",
+  "version": "1.0.0",
+  "description": "跨平台剪贴板共享应用",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "web": "cd web && npm start",
+    "mobile": "cd mobile && npm start",
+    "desktop": "cd desktop && npm start"
+  },
+  "keywords": ["clipboard", "share", "cross-platform"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "redis": "^4.6.10",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
