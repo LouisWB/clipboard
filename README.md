@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Clipboard Share
 
 跨平台剪贴板共享应用，支持在不同设备间快速共享剪贴板内容（文本和图片）。
@@ -55,3 +56,6 @@ MIT
 =======
 # clipboard
 >>>>>>> e01693e (Initial commit)
+=======
+# clipboard
+>>>>>>> e01693ec3005899c1ed2c74b737f72ffd28c6f86
