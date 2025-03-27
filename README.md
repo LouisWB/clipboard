@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Clipboard Share
 
 跨平台剪贴板共享应用，支持在不同设备间快速共享剪贴板内容（文本和图片）。
@@ -51,3 +52,6 @@ npm start
 ## 许可证
 
 MIT
+=======
+# clipboard
+>>>>>>> e01693e (Initial commit)
